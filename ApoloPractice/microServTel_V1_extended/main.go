@@ -1,5 +1,18 @@
 package main
 
+//STILL WORKING!
+
+/*
+	Microservicio de Telegram (version 1.1)
+
+	[ Crea un programa que haga:										]
+	[	1- una consulta mediante el metodo get o post a una página web,	]
+	[	2- guarde su estada, codigo de respuesta o error en un mensaje	]
+	[	3- envie este estado mediante el bot de telegram				]
+
+	En esta version 1.1 ademas implemento mi propia pagina web en localhost.
+
+*/
 import (
 	"bytes"
 	"fmt"
@@ -17,34 +30,38 @@ const (
 
 func sendTelegramMessage(bot *tlgrmBotApi.BotAPI, message string) error {
 
-	//creamos el nuevo mensaje con su direccion
+	//creamos el nuevo mensaje con su destino (telegramChatId)
 	msg := tlgrmBotApi.NewMessage(telegramChatID, message)
 
-	//enviando el mensaje
-	sendMessage, err := bot.Send(msg)
+	//Enviamos el mensaje
+	_, err := bot.Send(msg)
 	if err != nil {
 		return fmt.Errorf("error sending telegram message: %v", err)
 	}
-	fmt.Printf("el mensaje enviado a sido ---> %+v\n", sendMessage)
 	return nil
 }
 
 func makeHTPPRequest(method string, url string, payload []byte) (string, *http.Response, error) {
 
+	//Creamos la instancia del Cliente des de la que se hace la Req GET
 	client := &http.Client{}
+
+	//Configuramos la req con metodo, la url y 0(valores a mandar)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return "", nil, fmt.Errorf("error creating the http request: %v", err)
 	}
 
+	//Mandamos la req y retorna la instancia de la resp
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", nil, fmt.Errorf("error executing the http request: %v", err)
 	}
 
+	//Dejamos en Defer la liberacion de la respuesta para que se ejecute al final
 	defer resp.Body.Close()
 
-	//ahora almacenamos el cuerpo de la respuesta para mandarlo al telegram
+	//Almacenamos el cuerpo de la respuesta para mandarlo al telegram
 	//en formato []bytes (array/slice de bytes) ya que NewRequest retorna un io.ReadAll
 	bodyResp, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -56,30 +73,26 @@ func makeHTPPRequest(method string, url string, payload []byte) (string, *http.R
 
 func main() {
 
-	//URL que vamos a consultar
-	//desiredURL := "https://myWebCollete.com"
 	desiredURL := "https://jsonplaceholder.typicode.com/posts/1"
 
 	//Realizamos la solicitud HTTP (GET o POST)
 	body, resp, err := makeHTPPRequest("GET", desiredURL, nil)
-	//este tipo(log.Fatalf) imprime el error i termina el programa [os.Exit(1)]
+
 	if err != nil {
 		log.Fatalf("Error realizando la solicitud: %v", err)
 	}
 
-	//preparar el mensaje con el estado y la respuesta(cliente)
-	message := fmt.Sprintf("Codigo de respuesta: %d\nRespuesta: %s", resp.StatusCode, body)
+	//Aqui preparamos el mensaje. Respuesta del cliente y la propia respuesta
+	message := fmt.Sprintf("Codigo de respuesta: %d\n\nRespuesta: %s", resp.StatusCode, body)
 
-	//configurar el bot de telegram
+	//Configuramos el Bot de Telegram y le hacemos mandar el mensaje de respuesta
 	bot, err := tlgrmBotApi.NewBotAPI(telegramBotToken)
 	if err != nil {
 		log.Fatalf("Error creating the bot: %v", err)
 	}
-	//mandamos el mesaje al bot
 	err = sendTelegramMessage(bot, message)
 	if err != nil {
 		log.Fatalf("Error enviando el mensaje: %v", err)
-	} else {
-		fmt.Println("Mensaje enviado correctamente\n")
 	}
+	fmt.Println("Mensaje enviado correctamente\n")
 }
