@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/ApoloPractice/.idea/ApoloPractice.iml" filepath="$PROJECT_DIR$/ApoloPractice/.idea/ApoloPractice.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/go_journey.iml" filepath="$PROJECT_DIR$/.idea/go_journey.iml" />
     </modules>
   </component>
