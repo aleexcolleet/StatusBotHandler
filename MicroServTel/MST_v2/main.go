@@ -11,28 +11,27 @@ package main
 	[v2] -> En esta segunda version, implementamos el mismo codigo con objetos y metodos.
 		- Definir struct para el bot de telegram y el cliente HTTP
 		- Usar metodos para enviar los mensajes y hacer las solicitudes
-
+		- - Usar variables de entorno para las constantes
+		- Usar interfaces (conjunto de metodos) para los tipos para desacoplar la implementación de sú úso
 	Cosas por hacer:
-		- Usar variables de entorno o un config.yaml para las constantes
 		- Ser mas especifico con los errores para un mejor debug
-		- Usar interfaces (conjunto de metodos) para los tipos para desacoplar la implementación de sú úso (falta
-por investigar esto junto a la architectura hexagonal.
-		-Usar context.Context
+		- (falta por investigar esto junto a la architectura hexagonal.
+		- Usar context.Context (para manejar cancelaciones y tiempos limite)
+		- El codigo es secuencial,se pueden usar gorutinas para manejar varias solicitudes simultaneas
+		- Ejemplo de Mock para pruebas
 
 */
 import (
 	"bytes"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	tlgrmBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-)
-
-const (
-	telegramBotToken = "7868583574:AAH2qTuLLRDtR2ruzxgK0y6cc_JZWwREcUU"
-	telegramChatID   = int64(8115362810)
 )
 
 // Structs
@@ -44,6 +43,17 @@ type TelegramBot struct {
 // HTTPClient representa un Cliente HTTP desde el que mandar solicitudes
 type HTTPClient struct {
 	client *http.Client
+}
+
+// Interfaces
+// Messagenger is an interface for message sending with Telegram
+type Messenger interface {
+	SendTelegramMessage(chatID int64, message string) error
+}
+
+// Requester is an interface to request a URL by method (GET / POST)
+type Requester interface {
+	MakeHTTPRequest(method string, url string, payload []byte) (string, *http.Response, error)
 }
 
 // Metodos
@@ -101,14 +111,36 @@ func (hcl *HTTPClient) MakeHTTPRequest(method string, url string, payload []byte
 	return string(bodyResp), resp, nil
 }
 
+/*
+	Para las variables de entorno necesitamos la libreria: github.com/joho/godotenv
+	Una vez añadida, creadas las variables de entorno en un .env y exportadas.
+	Cargamos las variables en el Main. Se important como strings. Por eso hay
+		que transformar a telegramChatID
+*/
+
 func main() {
 
-	desiredURL := "https://jsonplaceholder.typicode.com/posts/1"
+	//Accedemos a las variables de entorno lo antes posible
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Errorf("error loading .env file")
+	}
+	telegramBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	tmpTelegramChatID := (os.Getenv("TELEGRAM_CHAT_ID"))
+	desiredURL := os.Getenv("DESIRED_URL")
+	if tmpTelegramChatID == "" || telegramBotToken == "" || desiredURL == "" {
+		fmt.Errorf("telegram bot token is empty")
+	}
+	telegramChatID, err := strconv.ParseInt(tmpTelegramChatID, 10, 64)
+	if err != nil {
+		fmt.Errorf("error converting string to int64")
+	}
 
-	httpClient := NewHTTPClient()
+	//Creamos una instancia de HTTPClient que implementa Requester
+	var requester Requester = NewHTTPClient()
 
 	//Realizamos la solicitud HTTP (GET o POST)
-	body, resp, err := httpClient.MakeHTTPRequest("GET", desiredURL, nil)
+	body, resp, err := requester.MakeHTTPRequest("GET", desiredURL, nil)
 	if err != nil {
 		log.Fatalf("ERROR making http request: %v", err)
 	}
@@ -117,11 +149,12 @@ func main() {
 	message := fmt.Sprintf("Codigo de respuesta: %d\n\nRespuesta: %s", resp.StatusCode, body)
 
 	// Configuramos el Bot de Telegram y le hacemos mandar el mensaje de respuesta
-	bot, err := NewTelegramBot(telegramBotToken)
+	var messenger Messenger
+	messenger, err = NewTelegramBot(telegramBotToken)
 	if err != nil {
 		log.Fatalf("Error creating the bot: %v", err)
 	}
-	err = bot.SendTelegramMessage(telegramChatID, message)
+	err = messenger.SendTelegramMessage(telegramChatID, message)
 	if err != nil {
 		log.Fatalf("Error enviando el mensaje: %v", err)
 	}
