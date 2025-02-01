@@ -2,17 +2,23 @@ package repositories
 
 import "context"
 
-tyoe User struct {
-	Name string
-	Id   string
+type User struct {
+	Name     string
+	Id       int
 	Password int
-	Email string
+	Email    string
 }
-//UserRepo define el contrato que cualquier repo (base de datos, memoria, erc...(
-//debe cumplir. Con ello, podemos cambiar de base de datos sin afectar
-//a la logica de negocio
+
+/*
+	UserRepo is an interface that acts as a port:
+		Defines how the core domain interacts with external systems.
+		It sayis which operations are available without implementing them.
+
+		This way, core domain remains agnostic from the different implementation
+		of other systems.
+*/
 
 type UserRepo interface {
-	CreteUser(ctx context.Context, user User) error
+	CreateUser(ctx context.Context, user User) error
 	ReadUser(ctx context.Context, userId int) (User, error)
 }
