@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	telegramBotToken = "7868583574:AAH2qTuLLRDtR2ruzxgK0y6cc_JZWwREcUU"
-	telegramChatID   = int64(8115362810)
+	telegramBotToken = "example_api_so_I_dont_leak_mine"
+	telegramChatID   = int64(//YourChatID)
 )
 
 func sendTelegramMessage(bot *tlgrmBotApi.BotAPI, message string) error {
