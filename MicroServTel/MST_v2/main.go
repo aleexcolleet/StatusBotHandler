@@ -1,6 +1,7 @@
 package main
 
 /*
+Falta un .env para que funcione
 	Microservicio de Telegram (version 1) -> By Collete
 
 	[ Crea un programa que haga:										]

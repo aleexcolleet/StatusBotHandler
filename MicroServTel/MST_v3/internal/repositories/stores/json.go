@@ -1,6 +1,7 @@
 package stores
 
 import (
+	"cmd/main.go/internal/repositories"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,7 +16,7 @@ then it stores the Resp on another JSON file (works as a repository)
 */
 
 // JsonURL is a go struct that contains info about each URL converted from the Jsonfile.
-// We need to map (relate dates that are in different formats) variables. Go knows now that
+// We need to map (relate dates that are in different formats) variables. Golang knows now that
 // url is associated to URL and will take the same value converted.
 type JsonURL struct {
 	Url string
@@ -23,7 +24,7 @@ type JsonURL struct {
 }
 
 type JsonStores struct {
-	URLs []JsonURL `json:"urls"`
+	URLs []repositories.URL
 }
 
 // NewJsonStores is a constructor that returns a JsonStores struct
@@ -61,16 +62,19 @@ func (S *JsonStores) LoadURLs(ctx context.Context) error {
 		return fmt.Errorf("error unmarshalling JsonURLs.json: %v", err)
 	}
 	//Make creates a slice of type []JsonURL with data.URLs length
-	S.URLs = make([]JsonURL, len(data.URLs))
+	S.URLs = make([]repositories.URL, len(data.URLs))
 	for i, url := range data.URLs {
-		S.URLs[i] = JsonURL{
+		S.URLs[i] = repositories.URL{
 			Url: url,
 			Id:  i + 1,
 		}
 	}
-
-	for _, u := range S.URLs {
-		fmt.Printf("URL: %s, ID: %d\n", u.Url, u.Id)
-	}
 	return nil
+}
+
+func (S *JsonStores) GetURLs(ctx context.Context) (repositories.URLs, error) {
+	return repositories.URLs{
+		URLs: S.URLs,
+	}, nil
+
 }

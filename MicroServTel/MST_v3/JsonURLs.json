@@ -1,12 +1,6 @@
 {
   "urls": [
-    {
-      "url": "https://jsonplaceholder.typicode.com/posts/1",
-      "id": 1
-    }
-    {
-      "url": "http://neverssl.com/",
-      
-    }
+    "https://jsonplaceholder.typicode.com/posts/1",
+    "https://neverssl.com/"
   ]
 }

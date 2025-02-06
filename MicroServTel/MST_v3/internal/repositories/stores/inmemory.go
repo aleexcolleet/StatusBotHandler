@@ -12,8 +12,8 @@ var URLsToReceive = []string{
 }
 
 /*
-Inmemory is the adapter to repositories which works with local database. In this case we
-need  to store the URLs that are already specified in this file.
+In-memory is the adapter to repositories which works with local database. In this case we
+need to store the URLs that are already specified in this file.
 
 First we need a struct to store URLs
 Then a constructor for this struct
@@ -26,6 +26,7 @@ type ImUserStore struct {
 
 // NewImUserStore is a constructor that stores URLs consts
 // in memory.
+// Each round of the loop adds a new repositories.URL to the slice with the values from URLsToReceive
 func NewImUserStore(ctx context.Context) (*ImUserStore, error) {
 	var urls []repositories.URL
 	for i, url := range URLsToReceive {
@@ -39,11 +40,11 @@ func NewImUserStore(ctx context.Context) (*ImUserStore, error) {
 
 // LoadURLs port is adapted here according to URLs from the const values.
 // I think that this func is not necessary on this adaptation
-func (S *ImUserStore) LoadURLs(ctx context.Context) error {
-	return nil
-}
+func (S *ImUserStore) LoadURLs(ctx context.Context) error { return nil }
 
 // GetURLs simply returns the struct created on NewImUserStore
-func (S *ImUserStore) GetURLs(ctx context.Context) ([]repositories.URL, error) {
-	return S.URLs, nil
+func (S *ImUserStore) GetURLs(ctx context.Context) (repositories.URLs, error) {
+	return repositories.URLs{
+		URLs: S.URLs,
+	}, nil
 }
