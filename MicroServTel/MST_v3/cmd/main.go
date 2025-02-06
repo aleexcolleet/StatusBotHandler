@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmd/main.go/config"
 	"cmd/main.go/internal/repositories/stores"
 	"context"
 	"fmt"
@@ -38,12 +39,12 @@ Cosas por hacer:
   - Ejemplo de Mock para pruebas
 */
 func main() {
-
 	//TODO
-	//cfg := config.GetConfig()
+	cfg := config.GetConfig()
+
 	//Getting URLs from ImMemory
 	fmt.Printf("Getting URLs from ImMemory:\n")
-	ImUserstoreOne, err := stores.NewImUserStore(context.Background())
+	ImUserstoreOne, err := stores.NewImUserStore(context.Background(), cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +59,7 @@ func main() {
 	}
 
 	fmt.Printf("\nGetting URLs from JSON:\n")
-	JsonStores := stores.NewJsonStores()
+	JsonStores := stores.NewJsonStores(context.Background(), cfg)
 	JsonStores.LoadURLs(context.Background())
 	repoURLs2, err := JsonStores.GetURLs(context.Background())
 	for _, u := range repoURLs2.URLs {

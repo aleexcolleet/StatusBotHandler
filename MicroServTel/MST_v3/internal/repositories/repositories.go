@@ -1,6 +1,8 @@
 package repositories
 
-import "context"
+import (
+	"context"
+)
 
 /*
 On this package we define the structs and interfaces that the program will use to communicate

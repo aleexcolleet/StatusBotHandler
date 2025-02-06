@@ -1,13 +1,13 @@
 package stores
 
 import (
+	"cmd/main.go/config"
 	"cmd/main.go/internal/repositories"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 /*
@@ -25,11 +25,15 @@ type JsonURL struct {
 
 type JsonStores struct {
 	URLs []repositories.URL
+	CFG  config.Config
 }
 
 // NewJsonStores is a constructor that returns a JsonStores struct
-func NewJsonStores() *JsonStores {
-	return &JsonStores{}
+func NewJsonStores(ctx context.Context, cfg config.Config) *JsonStores {
+	return &JsonStores{
+		URLs: []repositories.URL{},
+		CFG:  cfg,
+	}
 }
 
 /*
@@ -39,8 +43,8 @@ LoadURLs is a function that loads URLs from Json file and stores them in a struc
  3. Convert bytes into a Go Struct
 */
 func (S *JsonStores) LoadURLs(ctx context.Context) error {
-	filePath, _ := filepath.Abs("JsonURLs.json")
-	file, err := os.Open(filePath)
+
+	file, err := os.Open(S.CFG.JsonFiles.JsonURLRoute)
 	if err != nil {
 		return fmt.Errorf("error opening JsonURLs.json: %v", err)
 	}
@@ -76,5 +80,4 @@ func (S *JsonStores) GetURLs(ctx context.Context) (repositories.URLs, error) {
 	return repositories.URLs{
 		URLs: S.URLs,
 	}, nil
-
 }
