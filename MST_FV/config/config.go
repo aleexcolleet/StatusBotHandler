@@ -9,21 +9,21 @@ import (
 )
 
 type Config struct {
-	Bot      notifier.Bot
-	Chat     notifier.Chats
-	JsonFile JsonFiles
+	Bot       notifier.Bot
+	Chat      notifier.Chats
+	JsonFiles JsonFiles
 }
 
 type JsonFiles struct {
 	JsonUrlRoute  string
-	//confiJsonRepoRoute string
+	JsonRepoRoute string
 }
 
 func GetConfig() (Config, error) {
 
 	err := loadEnv()
 	if err != nil {
-		fmt.Println("Error loading env file")
+		fmt.Println("Error loading .env file")
 		return Config{}, err
 	}
 
@@ -34,15 +34,15 @@ func GetConfig() (Config, error) {
 	chatLoad := notifier.Chats{}
 	chatLoad.ChatsId = strings.Split(os.Getenv("CHATS_ID"), ",")
 
-	jsonFileLoad := JsonFiles{
+	jsonFilesLoad := JsonFiles{
 		JsonUrlRoute:  os.Getenv("JSON_URL_ROUTE"),
-		//JsonRepoRoute: os.Getenv("JSON_REPO_ROUTE"),
+		JsonRepoRoute: os.Getenv("JSON_REPO_ROUTE"),
 	}
 
 	return Config{
-		Bot:      botLoad,
-		Chat:     chatLoad,
-		JsonFile: jsonFileLoad,
+		Bot:       botLoad,
+		Chat:      chatLoad,
+		JsonFiles: jsonFilesLoad,
 	}, nil
 
 }

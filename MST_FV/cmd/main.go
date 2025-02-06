@@ -1,13 +1,15 @@
 package main
 
 import (
-	"cmd/main.go/config"
-	"cmd/main.go/internal/repositories/stores"
+	"MicroServ2/config"
+	"MicroServ2/internal/domain/usecases"
+	"MicroServ2/internal/repositories/stores"
 	"context"
 	"fmt"
 )
 
 /*
+	/*
 	Microservicio de Telegram (version 3) -> By Collete
 
 	[ Crea un programa que haga:										]
@@ -29,40 +31,33 @@ import (
 
 	Architectura Hexagonal:
 	1. Diseño del puerto.
-	2. Adaptacioón de repos(in-memory y json).
-	3.
+	2. Adaptación de repos(in-memory y json).
+	3. Implementacion del Checker(request, ...)
 
 Cosas por hacer:
+
   - Ser mas especifico con los errores para un mejor debug
   - Usar context.Context (para manejar cancelaciones y tiempos limite)
   - El codigo es secuencial,se pueden usar gorutinas para manejar varias solicitudes simultaneas
   - Ejemplo de Mock para pruebas
 */
+
 func main() {
-	//TODO
-	cfg := config.GetConfig()
-
-	//Getting URLs from ImMemory
-	fmt.Printf("Getting URLs from ImMemory:\n")
-	ImUserstoreOne, err := stores.NewImUserStore(context.Background(), cfg)
+	//	cfg is an instance of config
+	cfg, err := config.GetConfig()
 	if err != nil {
-		panic(err)
+		fmt.Errorf("error loading config: %v", err)
 	}
-	err = ImUserstoreOne.LoadURLs(context.Background())
+	//	ImStore is an instance of database
+	ImStore := stores.NewImStore()
+	// Domain is using the adaptation of InMemory
+	Domain := usecases.NewDomainInMemory(context.Background(), ImStore)
+	err = Domain.LoadURL(cfg)
 	if err != nil {
-		panic(err)
+		fmt.Errorf("error loading url: %v", err)
 	}
-
-	repoURLs, err := ImUserstoreOne.GetURLs(context.Background())
-	for _, u := range repoURLs.URLs {
-		fmt.Printf("the %d URL is: %v\n", u.Id, u.Url)
-	}
-
-	fmt.Printf("\nGetting URLs from JSON:\n")
-	JsonStores := stores.NewJsonStores(context.Background(), cfg)
-	JsonStores.LoadURLs(context.Background())
-	repoURLs2, err := JsonStores.GetURLs(context.Background())
-	for _, u := range repoURLs2.URLs {
-		fmt.Printf("the %d URL is: %v\n", u.Id, u.Url)
+	err = Domain.GetURL(context.Background())
+	if err != nil {
+		fmt.Errorf("error loading url: %v", err)
 	}
 }
