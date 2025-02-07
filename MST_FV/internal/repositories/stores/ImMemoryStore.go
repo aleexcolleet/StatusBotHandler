@@ -6,12 +6,14 @@ import (
 )
 
 type ImStore struct {
-	ImStore repositories.URLs
+	ImStore     repositories.URLs
+	ImStoreResp []repositories.URLData
 }
 
 func NewImStore() *ImStore {
 	return &ImStore{
-		ImStore: repositories.URLs{},
+		ImStore:     repositories.URLs{},
+		ImStoreResp: []repositories.URLData{},
 	}
 }
 
@@ -24,4 +26,9 @@ func (S *ImStore) GetURL(ctx context.Context) (repositories.URLs, error) {
 	return repositories.URLs{
 		URLs: S.ImStore.URLs,
 	}, nil
+}
+
+func (S *ImStore) LoadResponse(ctx context.Context, urlsResponse []repositories.URLData) error {
+	S.ImStoreResp = urlsResponse
+	return nil
 }

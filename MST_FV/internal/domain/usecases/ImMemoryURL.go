@@ -22,7 +22,7 @@ type JsonTmp struct {
 }
 
 func (receiver *ImMemoryURL) LoadURL(cfg config.Config) error {
-	file, err := os.ReadFile(cfg.JsonFile.JsonUrlRoute)
+	file, err := os.ReadFile(cfg.JsonFiles.JsonUrlRoute)
 	if err != nil {
 		return fmt.Errorf("Error while loading URL: %v", err)
 	}
@@ -40,11 +40,12 @@ func (receiver *ImMemoryURL) LoadURL(cfg config.Config) error {
 	return nil
 }
 
+/*
 func (receiver *ImMemoryURL) GetURL(ctx context.Context) error {
 	URLs, err := receiver.repo.GetURL(context.Background())
 	if err != nil {
 		return fmt.Errorf("Error while loading URL: %v", err)
 	}
-	fmt.Println(URLs)
 	return nil
 }
+*/

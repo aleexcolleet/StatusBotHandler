@@ -2,6 +2,7 @@ package main
 
 import (
 	"MicroServ2/config"
+	"MicroServ2/internal/domain/services"
 	"MicroServ2/internal/domain/usecases"
 	"MicroServ2/internal/repositories/stores"
 	"context"
@@ -56,8 +57,6 @@ func main() {
 	if err != nil {
 		fmt.Errorf("error loading url: %v", err)
 	}
-	err = Domain.GetURL(context.Background())
-	if err != nil {
-		fmt.Errorf("error loading url: %v", err)
-	}
+	Checker := services.NewCheckerURL(context.Background(), ImStore)
+	Checker.GetURLStatus(context.Background())
 }
