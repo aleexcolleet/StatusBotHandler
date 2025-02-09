@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"microServBack/config"
+	"microServBack/internal/domain/usecases"
+	"microServBack/internal/repositories/stores"
 )
 
 func main() {
@@ -11,6 +13,9 @@ func main() {
 		panic("config file error")
 	}
 
-	//For unused warning
-	_ = cfg
+	//Using loadUrls to load JsonFile URLs into the repo
+	//Instance of the repository (database)
+	ImStore := stores.NewImStore()
+	Domain := usecases.NewImMemoryStore(context.Background(), ImStore)
+	Domain.LoadUrl(cfg)
 }
