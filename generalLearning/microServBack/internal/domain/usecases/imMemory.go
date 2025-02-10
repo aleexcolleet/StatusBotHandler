@@ -46,3 +46,11 @@ func (receiver *ImMemoryStore) LoadUrl(cfg config.Config) error {
 	err = receiver.repo.LoadUrl(context.Background(), urlRode)
 	return nil
 }
+
+func (receiver *ImMemoryStore) GetUrls(ctx context.Context) (repositories.URLs, error) {
+	Urls, err := receiver.repo.GetUrls(ctx)
+	if err != nil {
+		return repositories.URLs{}, fmt.Errorf("error while getting Urls in domain: %w", err)
+	}
+	return Urls, nil
+}

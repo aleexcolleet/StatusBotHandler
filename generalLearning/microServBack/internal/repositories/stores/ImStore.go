@@ -20,3 +20,8 @@ func (S *ImStore) LoadUrl(ctx context.Context, urls repositories.URLs) error {
 	S.UrlsStore.URLs = urls.URLs
 	return nil
 }
+
+// GetUrls in inmemory is an adaptation to fetch Urls from the repo
+func (S *ImStore) GetUrls(ctx context.Context) (repositories.URLs, error) {
+	return S.UrlsStore, nil
+}
