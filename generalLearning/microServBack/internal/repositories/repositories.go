@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-type URL struct {
+type URLData struct {
 	URL        string
 	Status     bool
 	Comment    string
