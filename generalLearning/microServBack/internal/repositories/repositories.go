@@ -19,4 +19,5 @@ type URLs struct {
 type UrlRepo interface {
 	LoadUrl(ctx context.Context, urls URLs) error
 	GetUrls(ctx context.Context) (URLs, error)
+	StoreUrlsResp(ctx context.Context, UrlsData []URLData) error
 }

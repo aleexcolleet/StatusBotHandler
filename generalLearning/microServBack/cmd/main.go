@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"microServBack/config"
+	"microServBack/internal/domain/services"
 	"microServBack/internal/domain/usecases"
 	"microServBack/internal/repositories/stores"
 )
@@ -18,6 +21,17 @@ func main() {
 	ImStore := stores.NewImStore()
 	Domain := usecases.NewImMemoryStore(context.Background(), ImStore)
 	Domain.LoadUrl(cfg)
+
+	//Checker is an instance to check status and store its response
+	Checker := services.NewCheckerAdapt(context.Background(), ImStore)
+	err = Checker.GetURLsStatus(context.Background())
+	if err != nil {
+		log.Fatalf("error checking URLs from main: %v\n", err)
+	}
+	//Check if status have been stored correctly
+	for i, u := range ImStore.UrlsDataResp {
+		fmt.Printf("URL #%d: %v\n", i, u)
+	}
 
 	/*
 		I don't need to get Urls from here, but I'll leave the implementation below
