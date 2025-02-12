@@ -1,22 +1,24 @@
 package repositories
 
 import (
+	"MicroServ2/internal/repositories/models"
 	"context"
 )
 
-type URLs struct {
-	URLs []string
-}
-
-type URLData struct {
-	URL        string
-	Status     bool
-	Comments   string
-	StatusCode int
-}
-
+// URLRepo is an interface for the repository itself. Doesn't have dependencies
 type URLRepo interface {
-	LoadURL(ctx context.Context, urls URLs) error
-	GetURL(ctx context.Context) (URLs, error)
-	LoadResponse(ctx context.Context, urlsResponse []URLData) error
+	LoadURL(ctx context.Context, urls models.URLs) error
+	GetURL(ctx context.Context) (models.URLs, error)
+
+	LoadResponse(ctx context.Context, urlsResponse []models.URLData) error
 }
+
+//Checker Port Definition.
+// Is an interface that needs a previous repository to function. It's a dependency.
+
+type CheckerRepo interface {
+	//TODO
+	CheckURLStatus(ctx context.Context) error
+}
+
+//Message Port definition
