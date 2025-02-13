@@ -1,0 +1,61 @@
+package config
+
+import (
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+	"strings"
+)
+
+/*
+config is a package that I use to get config configuration.
+*/
+type Config struct {
+	Bot        Bot
+	Chats      Chats
+	JsonRoutes JsonRoutes
+}
+type Bot struct {
+	ApiToken   string
+	ApiUrlMess string
+}
+
+type Chats struct {
+	ChatsId []string
+}
+type JsonRoutes struct {
+	JsonRouteRepo      string
+	JsonRouteUrlSource string
+}
+
+func GetConfig() (Config, err) {
+
+	loadEnv()
+	botLoad := Bot{
+		ApiToken: os.Getenv("API_TOKEN"),
+	}
+	botLoad.setApiUrlMess()
+
+	chatLoad := Chats{}
+	chatLoad.ChatsId = strings.Split(os.Getenv("CHAT_IDS"), ",")
+
+	return Config{
+		Bot:   botLoad,
+		Chats: chatLoad,
+		JsonRoutes: JsonRoutes{
+			JsonRouteRepo:      os.Getenv("JSON_ROUTE_REPO"),
+			JsonRouteUrlSource: os.Getenv("JSON_ROUTE_URL_SOURCE"),
+		},
+	}, nil
+}
+
+func loadEnv() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+func (b *Bot) setApiUrlMess() {
+	b.ApiUrlMess = "https://api.telegram.org/bot" + b.ApiToken + "/sendMessage"
+}
