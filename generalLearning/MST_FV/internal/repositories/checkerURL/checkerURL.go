@@ -69,5 +69,4 @@ func checkerURL(ctx context.Context, URL string) (models.URLData, error) {
 		Comment:    "Active ✅ Response: " + since.String(),
 		StatusCode: res.StatusCode,
 	}, nil
-
 }

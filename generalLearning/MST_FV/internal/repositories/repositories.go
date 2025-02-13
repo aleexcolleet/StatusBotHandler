@@ -9,7 +9,6 @@ import (
 type URLRepo interface {
 	LoadURL(ctx context.Context, urls models.URLs) error
 	GetURL(ctx context.Context) (models.URLs, error)
-
 	LoadResponse(ctx context.Context, urlsResponse []models.URLData) error
 }
 

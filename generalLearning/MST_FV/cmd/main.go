@@ -44,10 +44,10 @@ Cosas por hacer:
 */
 
 func main() {
-	//	cfg is an instance of config
+	//	cfg is an instance of configur
 	cfg, err := config.GetConfig()
 	if err != nil {
-		fmt.Errorf("error loading config: %v", err)
+		fmt.Errorf("error loading configur: %v", err)
 	}
 	//	ImStore is an instance of database
 	ImStore := stores.NewImStore()
