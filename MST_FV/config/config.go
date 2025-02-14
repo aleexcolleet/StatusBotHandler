@@ -7,9 +7,8 @@ import (
 	"strings"
 )
 
-/*
-config is a package that I use to get config configuration.
-*/
+// Config is a package that I use to get config configuration.
+
 type Config struct {
 	Bot        Bot
 	Chats      Chats
@@ -28,7 +27,7 @@ type JsonRoutes struct {
 	JsonRouteUrlSource string
 }
 
-func GetConfig() (Config, err) {
+func GetConfig() (Config, error) {
 
 	loadEnv()
 	botLoad := Bot{
