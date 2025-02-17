@@ -12,6 +12,10 @@ import (
 // I consider checkUrl a "static" func so that I only call it from the http implementation.
 type HttpUrlChecker struct{}
 
+func NewHttpUrlChecker() *HttpUrlChecker {
+	return &HttpUrlChecker{}
+}
+
 // GetCheckResp receives the urls and returns the resp it gets from http request
 func (s *HttpUrlChecker) GetCheckResp(ctx context.Context, urls models.URLs) ([]models.URLData, error) {
 

@@ -23,6 +23,6 @@ type CheckUrlRepo interface {
 type Message interface {
 	GetMessages(ctx context.Context, urlsData []models.URLData) ([]string, error)
 	// SendMessages
-	//TODO I don't know why it's a messages []string
+	//TODO
 	SendMessages(ctx context.Context, messages []string) error
 }
