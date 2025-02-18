@@ -8,40 +8,67 @@ import (
 	"MST_FV/internal/repositories/stores"
 	"context"
 	"fmt"
+	"log"
 )
 
 /*
 MicroService -> Telegram Message Requester
 
+things to do:
+- every definition port goes into repositories.go
+
 Things to do:
 
 - Be more specific with errors for a better debug
-- Use context.Context (to improve cancellations and deadline)
+- Use context.Context (to improve cancellations and deadline) TODO
 - The code could use goroutines to manage requests simultaneously
 - Mock example for tests
 
 */
 
-func main() {
+type Dependencies struct {
+	Config       config.Config
+	JsonStore    *stores.JsonStoreRepo
+	TelegramMsgs *message.TelegramMsgs
+	HttpChecker  *checker.HttpUrlChecker
+	Services     *usecases.Services
+}
 
+func newDependencyInjector() (*Dependencies, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		fmt.Errorf("Error getting config: %v", err)
+		return nil, fmt.Errorf("error getting configLoad %v\n", err)
 	}
-	fmt.Printf("Config Creada\n")
 
-	JsonStoreRepo := stores.NewJsonStoreRepo(cfg)
-	fmt.Printf("Repo Creado con JsonStoreRepo\n")
+	//ReposLoad
+	jsonStoreRepo := stores.NewJsonStoreRepo(cfg)
+	telegramMsgs, err := message.NewTelegramMsgs(cfg)
 
-	TelegramMsgs, err := message.NewTelegramMsgs(cfg)
-	fmt.Printf("Repo Creado con TelegramMsgs\n")
+	if err != nil {
+		return nil, fmt.Errorf("error creating telegramMsgs %v\n", err)
+	}
+	httpChecker := checker.NewHttpUrlChecker()
+	services := usecases.NewServices(jsonStoreRepo, telegramMsgs, httpChecker)
 
-	HttpChecker := checker.NewHttpUrlChecker()
-	fmt.Printf("Repo Creado con HttpUrlChecker\n")
+	return &Dependencies{
+		Config:       cfg,
+		JsonStore:    jsonStoreRepo,
+		TelegramMsgs: telegramMsgs,
+		HttpChecker:  httpChecker,
+		Services:     services,
+	}, nil
+}
 
-	Services := usecases.NewServices(JsonStoreRepo, TelegramMsgs, HttpChecker)
-	fmt.Printf("Domain Creado con Services\n")
+func main() {
 
-	Services.ConsultAndSend(context.Background())
+	injector, err := newDependencyInjector()
+	if err != nil {
+		log.Fatalf("error creating injector: %v", err)
+	}
 
+	err = injector.Services.ConsultAndSend(context.Background())
+	if err != nil {
+		log.Fatalf("error in consultAndSend services: %v", err)
+	}
+	log.Println("ConsultAndSend success")
 }

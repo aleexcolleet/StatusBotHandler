@@ -16,7 +16,7 @@ type Services struct {
 
 // ConsultAndSend Domain interface to interact with the adapters
 type ConsultAndSend interface {
-	consultAndSend(ctx context.Context)
+	consultAndSend(ctx context.Context) error
 }
 
 // NewServices is a constructor for the Services
@@ -24,41 +24,43 @@ func NewServices(urlRepo repositories.UrlRepo, messageRepo repositories.Message,
 	return &Services{urlRepo: urlRepo, messageRepo: messageRepo, checkUrlRepo: checkUrlRepo}
 }
 
-func (s *Services) ConsultAndSend(ctx context.Context) {
+func (s *Services) ConsultAndSend(ctx context.Context) error {
 
-	//Fetch Urls from wherever they're
 	urls, err := s.urlRepo.GetUrls(context.Background())
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return fmt.Errorf("%v", err)
 	}
-	fmt.Printf("GetURLS\n")
 
-	//Call checker and fetch return struct (response Data)
+	err = s.urlRepo.LoadUrls(context.Background(), urls)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+
 	urlsDataResp, err := s.checkUrlRepo.GetCheckResp(context.Background(), urls)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return fmt.Errorf("%v", err)
 	}
-	fmt.Printf("CheckUrlRepo\n")
 
-	//Load the checkerResp into the repository
 	err = s.urlRepo.LoadStatusResponse(context.Background(), urlsDataResp)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return fmt.Errorf("%v", err)
 	}
-	fmt.Printf("LoadStatusResponse\n")
-	//GetStatusResponse which I won't need because I already have it, but I'll implement it
-	//urlsDataResp, err := s.urlRepo.GetStatusResponse(context.Background())
 
-	//Message interface call
+	/*
+		urlResp, err := s.urlRepo.GetStatusResponse(context.Background())
+		if err != nil {
+			return fmt.Errorf("%v", err)
+		}
+	*/
 	msgs, err := s.messageRepo.GetMessages(context.Background(), urlsDataResp)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return fmt.Errorf("%v", err)
 	}
-	fmt.Printf("GetMessages\n")
-	//SendMessages
+
 	err = s.messageRepo.SendMessages(context.Background(), msgs)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return fmt.Errorf("%v", err)
 	}
-	fmt.Printf("SendMessages\n")
+
+	return nil
 }

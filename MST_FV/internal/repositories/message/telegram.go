@@ -3,16 +3,20 @@ package message
 import (
 	"MST_FV/config"
 	"MST_FV/internal/domain/models"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	tlgrmBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"strconv"
+	"net/http"
 )
 
 type TelegramMsgs struct {
 	messages       []TelegramMsg
 	telegramBotApi TelegramBotApi
-	chatIds        []int64
+	chatIds        []string
+	apiUrlMess     string
+	urls           []string
 }
 
 // TelegramMsg is a struct to manage the specific message characteristics from telegram
@@ -32,22 +36,17 @@ func NewTelegramMsgs(cfg config.Config) (*TelegramMsgs, error) {
 		fmt.Errorf("error creating bot instance: %s", err)
 	}
 
-	//Create the chatIds array converted to int64
-	chatIds := make([]int64, len(cfg.Chats.ChatsId))
-	for _, cId := range cfg.Chats.ChatsId {
-		tmpChatId, err := strconv.ParseInt(cId, 10, 64)
-		if err != nil {
-			return &TelegramMsgs{}, fmt.Errorf("error parsing chatId: %s", err)
-		}
-		chatIds = append(chatIds, tmpChatId)
-	}
+	chatsLoad := cfg.Chats.ChatsId   //Create the chatIds array
+	apiUrlMess := cfg.Bot.ApiUrlMess //tokenUrl
 
 	return &TelegramMsgs{
-		chatIds:  chatIds,
+
+		chatIds:  chatsLoad,
 		messages: []TelegramMsg{},
 		telegramBotApi: TelegramBotApi{
 			bot: bot,
 		},
+		apiUrlMess: apiUrlMess,
 	}, nil
 }
 
@@ -63,11 +62,11 @@ func (t *TelegramMsgs) GetMessages(ctx context.Context, urlsData []models.URLDat
 	// TelegramMsgs constr
 	for i, tmpUrlsData := range urlsData {
 
-		tmpTelMsg.msgIndex = i + 1              //iterator
-		tmpTelMsg.message = tmpUrlsData.Comment //messageToSend
+		tmpTelMsg.msgIndex = i + 1                                                                            //iterator
+		tmpTelMsg.message = fmt.Sprintf("[The url %d: on -----] %s", tmpTelMsg.msgIndex, tmpUrlsData.Comment) //telMess
 
-		tmpTelMsgs = append(tmpTelMsgs, tmpTelMsg)             //messages struct
-		tmpMessages = append(tmpMessages, tmpUrlsData.Comment) //[]string messages
+		tmpTelMsgs = append(tmpTelMsgs, tmpTelMsg)           //messages struct
+		tmpMessages = append(tmpMessages, tmpTelMsg.message) //[]string messages
 	}
 	t.messages = append(t.messages, tmpTelMsgs...)
 	return tmpMessages, nil
@@ -78,14 +77,27 @@ func (t *TelegramMsgs) GetMessages(ctx context.Context, urlsData []models.URLDat
 // I find unnecessary to store the msg struct for telegram, so I'll just generate it and send it here.
 func (t *TelegramMsgs) SendMessages(ctx context.Context, messages []string) error {
 
+	apiUrlMess := t.apiUrlMess
+	chatIds := t.chatIds
+
 	for _, message := range messages {
-		for _, chatId := range t.chatIds {
-			msg := tlgrmBotApi.NewMessage(chatId, message)
-			_, err := t.telegramBotApi.bot.Send(msg)
+		for _, chatId := range chatIds {
+
+			reqBody, _ := json.Marshal(map[string]string{
+				"chat_id": chatId,
+				"text":    message,
+			})
+			resp, err := http.Post(apiUrlMess, "application/json", bytes.NewBuffer(reqBody))
 			if err != nil {
-				return fmt.Errorf("error while sending message to a Telegram chat: %v\n", err)
+				return fmt.Errorf("error sending message: %s", err)
+			}
+			defer resp.Body.Close() //keep it for debugging if needed
+
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("error sending message: %s", resp.Status)
 			}
 		}
 	}
+	fmt.Printf("✅Messages sent correctly✅\n")
 	return nil
 }

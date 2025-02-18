@@ -10,18 +10,21 @@ import (
 )
 
 type JsonStoreRepo struct {
-	jsonUrls      models.URLs
-	jsonRouteRepo string
+	jsonUrls       models.URLs
+	jsonRouteRepo  string
+	jsonSourceRepo string
 }
 
 func NewJsonStoreRepo(cfg config.Config) *JsonStoreRepo {
 	return &JsonStoreRepo{
-		jsonUrls:      models.URLs{},
-		jsonRouteRepo: cfg.JsonRoutes.JsonRouteUrlSource,
+		jsonUrls:       models.URLs{},
+		jsonSourceRepo: cfg.JsonRoutes.JsonRouteUrlSource,
+		jsonRouteRepo:  cfg.JsonRoutes.JsonRouteRepo,
 	}
 }
 
 // LoadUrls loads the models.URLs to store em in the repo struct, in this case, a JsonFile
+// In reality it's useless for my project but could come in handy, so I'll keep it
 func (s *JsonStoreRepo) LoadUrls(ctx context.Context, urls models.URLs) error {
 
 	//Transform the array into a []byte for Json recognition
@@ -42,7 +45,7 @@ func (s *JsonStoreRepo) GetUrls(ctx context.Context) (models.URLs, error) {
 	var tmpUrls models.URLs
 
 	//Os.ReadFile reads and closes the file automatically withoud defer need
-	file, err := os.ReadFile(s.jsonRouteRepo)
+	file, err := os.ReadFile(s.jsonSourceRepo)
 	if err != nil {
 		return models.URLs{}, fmt.Errorf("error opening JsonFile: %s", err.Error())
 	}
@@ -55,11 +58,31 @@ func (s *JsonStoreRepo) GetUrls(ctx context.Context) (models.URLs, error) {
 	return tmpUrls, nil
 }
 
+// LoadStatusResponse should write the URL response into the Json file
 func (s *JsonStoreRepo) LoadStatusResponse(ctx context.Context, urlsData []models.URLData) error {
-	s.jsonUrls.UrlsData = urlsData
+
+	urlsInBytes, err := json.MarshalIndent(urlsData, "", " ")
+	if err != nil {
+		return fmt.Errorf("error Marshaling urls: %s", err.Error())
+	}
+	err = os.WriteFile(s.jsonRouteRepo, urlsInBytes, 0644)
+	if err != nil {
+		return fmt.Errorf("error while writing into JsonFile: %s", err.Error())
+	}
 	return nil
+
 }
 
 func (s *JsonStoreRepo) GetStatusResponse(ctx context.Context) ([]models.URLData, error) {
-	return s.jsonUrls.UrlsData, nil
+	var tmpUrlsData []models.URLData
+	file, err := os.ReadFile(s.jsonRouteRepo)
+	if err != nil {
+		return nil, fmt.Errorf("error opening JsonFile: %s", err.Error())
+	}
+	err = json.Unmarshal(file, &tmpUrlsData)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling JsonFile: %s", err.Error())
+	}
+
+	return tmpUrlsData, nil
 }
