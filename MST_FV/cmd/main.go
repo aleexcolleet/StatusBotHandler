@@ -7,15 +7,11 @@ import (
 	"MST_FV/internal/repositories/message"
 	"MST_FV/internal/repositories/stores"
 	"context"
-	"fmt"
 	"log"
 )
 
 /*
 MicroService -> Telegram Message Requester
-
-things to do:
-- every definition port goes into repositories.go
 
 Things to do:
 
@@ -26,49 +22,18 @@ Things to do:
 
 */
 
-type Dependencies struct {
-	Config       config.Config
-	JsonStore    *stores.JsonStoreRepo
-	TelegramMsgs *message.TelegramMsgs
-	HttpChecker  *checker.HttpUrlChecker
-	Services     *usecases.Services
-}
-
-func newDependencyInjector() (*Dependencies, error) {
-	cfg, err := config.GetConfig()
-	if err != nil {
-		return nil, fmt.Errorf("error getting configLoad %v\n", err)
-	}
-
-	//ReposLoad
-	jsonStoreRepo := stores.NewJsonStoreRepo(cfg)
-	telegramMsgs, err := message.NewTelegramMsgs(cfg)
-
-	if err != nil {
-		return nil, fmt.Errorf("error creating telegramMsgs %v\n", err)
-	}
-	httpChecker := checker.NewHttpUrlChecker()
-	services := usecases.NewServices(jsonStoreRepo, telegramMsgs, httpChecker)
-
-	return &Dependencies{
-		Config:       cfg,
-		JsonStore:    jsonStoreRepo,
-		TelegramMsgs: telegramMsgs,
-		HttpChecker:  httpChecker,
-		Services:     services,
-	}, nil
-}
-
 func main() {
 
-	injector, err := newDependencyInjector()
+	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Fatalf("error creating injector: %v", err)
+		log.Fatalf("error getting configLoad %v\n", err)
 	}
-
-	err = injector.Services.ConsultAndSend(context.Background())
+	storeRepo := stores.NewJsonStoreRepo(cfg)
+	msgsRepo := message.NewTelegramMsgs(cfg)
+	checkerRepo := checker.NewHttpUrlChecker()
+	services := usecases.NewServices(storeRepo, msgsRepo, checkerRepo)
+	err = services.ConsultAndSend(context.Background(), cfg)
 	if err != nil {
-		log.Fatalf("error in consultAndSend services: %v", err)
+		log.Fatal(err)
 	}
-	log.Println("ConsultAndSend success")
 }

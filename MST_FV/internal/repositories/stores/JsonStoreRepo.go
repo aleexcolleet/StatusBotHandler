@@ -45,7 +45,7 @@ func (s *JsonStoreRepo) GetUrls(ctx context.Context) (models.URLs, error) {
 	var tmpUrls models.URLs
 
 	//Os.ReadFile reads and closes the file automatically withoud defer need
-	file, err := os.ReadFile(s.jsonSourceRepo)
+	file, err := os.ReadFile(s.jsonRouteRepo)
 	if err != nil {
 		return models.URLs{}, fmt.Errorf("error opening JsonFile: %s", err.Error())
 	}
@@ -59,9 +59,9 @@ func (s *JsonStoreRepo) GetUrls(ctx context.Context) (models.URLs, error) {
 }
 
 // LoadStatusResponse should write the URL response into the Json file
-func (s *JsonStoreRepo) LoadStatusResponse(ctx context.Context, urlsData []models.URLData) error {
+func (s *JsonStoreRepo) LoadStatusResponse(ctx context.Context, urls models.URLs) error {
 
-	urlsInBytes, err := json.MarshalIndent(urlsData, "", " ")
+	urlsInBytes, err := json.MarshalIndent(urls, "", " ")
 	if err != nil {
 		return fmt.Errorf("error Marshaling urls: %s", err.Error())
 	}

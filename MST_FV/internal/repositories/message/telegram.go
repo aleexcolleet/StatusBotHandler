@@ -7,47 +7,36 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	tlgrmBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"net/http"
 )
 
 type TelegramMsgs struct {
-	messages       []TelegramMsg
-	telegramBotApi TelegramBotApi
-	chatIds        []string
-	apiUrlMess     string
-	urls           []string
+	Bot   Bot
+	Chats Chats
+}
+type Bot struct {
+	ApiToken   string
+	ApiUrlMess string
 }
 
-// TelegramMsg is a struct to manage the specific message characteristics from telegram
-type TelegramMsg struct {
-	message  string
-	msgIndex int
-}
-type TelegramBotApi struct {
-	bot *tlgrmBotApi.BotAPI
+type Chats struct {
+	ChatsId []string
 }
 
-func NewTelegramMsgs(cfg config.Config) (*TelegramMsgs, error) {
+func NewTelegramMsgs(cfg config.Config) *TelegramMsgs {
 
-	// Create bot instance with the actual api Token
-	bot, err := tlgrmBotApi.NewBotAPI(cfg.Bot.ApiToken)
-	if err != nil {
-		fmt.Errorf("error creating bot instance: %s", err)
+	botLoad := Bot{
+		ApiToken: cfg.Bot.ApiToken,
 	}
+	botLoad.setUrlApi()
 
-	chatsLoad := cfg.Chats.ChatsId   //Create the chatIds array
-	apiUrlMess := cfg.Bot.ApiUrlMess //tokenUrl
-
+	chatsLoad := Chats{
+		ChatsId: cfg.Chats.ChatsId,
+	}
 	return &TelegramMsgs{
-
-		chatIds:  chatsLoad,
-		messages: []TelegramMsg{},
-		telegramBotApi: TelegramBotApi{
-			bot: bot,
-		},
-		apiUrlMess: apiUrlMess,
-	}, nil
+		Bot:   botLoad,
+		Chats: chatsLoad,
+	}
 }
 
 // GetMessages func converts the urlsData into a TelegramMsgs struct so that I can
@@ -55,21 +44,13 @@ func NewTelegramMsgs(cfg config.Config) (*TelegramMsgs, error) {
 // I need to return a []slice and not a TelegramMessage type because this is just an implementation.
 func (t *TelegramMsgs) GetMessages(ctx context.Context, urlsData []models.URLData) ([]string, error) {
 
-	var tmpTelMsg TelegramMsg
+	var tmpString []string
 
-	var tmpTelMsgs []TelegramMsg
-	var tmpMessages []string
-	// TelegramMsgs constr
-	for i, tmpUrlsData := range urlsData {
-
-		tmpTelMsg.msgIndex = i + 1                                                                            //iterator
-		tmpTelMsg.message = fmt.Sprintf("[The url %d: on -----] %s", tmpTelMsg.msgIndex, tmpUrlsData.Comment) //telMess
-
-		tmpTelMsgs = append(tmpTelMsgs, tmpTelMsg)           //messages struct
-		tmpMessages = append(tmpMessages, tmpTelMsg.message) //[]string messages
+	for i, urlData := range urlsData {
+		tmpMesStr := fmt.Sprintf("Url number[%d] checked: [%s] \n%s\n", i, urlData.Url, urlData.Comment)
+		tmpString = append(tmpString, tmpMesStr)
 	}
-	t.messages = append(t.messages, tmpTelMsgs...)
-	return tmpMessages, nil
+	return tmpString, nil
 }
 
 // SendMessages converts the messages slice into the required struct by telegram(chatId + message)
@@ -77,22 +58,20 @@ func (t *TelegramMsgs) GetMessages(ctx context.Context, urlsData []models.URLDat
 // I find unnecessary to store the msg struct for telegram, so I'll just generate it and send it here.
 func (t *TelegramMsgs) SendMessages(ctx context.Context, messages []string) error {
 
-	apiUrlMess := t.apiUrlMess
-	chatIds := t.chatIds
+	botLoad := t.Bot
+	chatLoad := t.Chats
 
-	for _, message := range messages {
-		for _, chatId := range chatIds {
-
-			reqBody, _ := json.Marshal(map[string]string{
+	for _, msg := range messages {
+		for _, chatId := range chatLoad.ChatsId {
+			reqMap, err := json.Marshal(map[string]string{
 				"chat_id": chatId,
-				"text":    message,
+				"text":    msg,
 			})
-			resp, err := http.Post(apiUrlMess, "application/json", bytes.NewBuffer(reqBody))
+			resp, err := http.Post(botLoad.ApiUrlMess, "application/json", bytes.NewBuffer(reqMap))
 			if err != nil {
 				return fmt.Errorf("error sending message: %s", err)
 			}
-			defer resp.Body.Close() //keep it for debugging if needed
-
+			resp.Body.Close() //keep it for debugging if needed
 			if resp.StatusCode != http.StatusOK {
 				return fmt.Errorf("error sending message: %s", resp.Status)
 			}
@@ -100,4 +79,9 @@ func (t *TelegramMsgs) SendMessages(ctx context.Context, messages []string) erro
 	}
 	fmt.Printf("✅Messages sent correctly✅\n")
 	return nil
+}
+
+// Dependencies
+func (b *Bot) setUrlApi() {
+	b.ApiUrlMess = fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.ApiToken)
 }
