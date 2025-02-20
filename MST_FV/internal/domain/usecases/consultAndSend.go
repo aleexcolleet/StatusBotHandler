@@ -73,19 +73,26 @@ func (s *Services) loadUrls(ctx context.Context, cfg config.Config) error {
 
 	jsonSourceFile := cfg.JsonRoutes.JsonRouteUrlSource
 	var tmpURLs models.URLs
-	var urls []string
 
 	file, err := os.ReadFile(jsonSourceFile)
 	if err != nil {
 		return err
 	}
-
-	err = json.Unmarshal(file, &urls)
+	var jsonData struct {
+		Urls []string `json:"urls"`
+	}
+	err = json.Unmarshal(file, &jsonData)
 	if err != nil {
 		return err
 	}
-	tmpURLs.Urls = urls
-	s.urlRepo.LoadUrls(context.Background(), tmpURLs)
+
+	tmpURLs.Urls = jsonData.Urls
+	tmpURLs.UrlsData = []models.URLData{}
+
+	err = s.urlRepo.LoadUrls(ctx, tmpURLs)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

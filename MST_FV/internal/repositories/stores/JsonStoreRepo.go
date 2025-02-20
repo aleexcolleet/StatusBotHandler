@@ -28,7 +28,7 @@ func NewJsonStoreRepo(cfg config.Config) *JsonStoreRepo {
 func (s *JsonStoreRepo) LoadUrls(ctx context.Context, urls models.URLs) error {
 
 	//Transform the array into a []byte for Json recognition
-	urlsInBytes, err := json.MarshalIndent(urls.Urls, "", "-->")
+	urlsInBytes, err := json.Marshal(urls)
 	if err != nil {
 		return fmt.Errorf("error Marshaling urls: %s", err.Error())
 	}

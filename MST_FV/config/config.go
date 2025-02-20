@@ -8,7 +8,6 @@ import (
 )
 
 // Config is a package that I use to get config configuration.
-
 type Config struct {
 	Bot        Bot
 	Chats      Chats

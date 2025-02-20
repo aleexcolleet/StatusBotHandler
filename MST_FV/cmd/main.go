@@ -8,6 +8,7 @@ import (
 	"MST_FV/internal/repositories/stores"
 	"context"
 	"log"
+	"time"
 )
 
 /*
@@ -28,10 +29,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("error getting configLoad %v\n", err)
 	}
+
+	// Adapters
 	storeRepo := stores.NewJsonStoreRepo(cfg)
 	msgsRepo := message.NewTelegramMsgs(cfg)
 	checkerRepo := checker.NewHttpUrlChecker()
+
+	// Domain Service with dependencies injected
 	services := usecases.NewServices(storeRepo, msgsRepo, checkerRepo)
+
 	err = services.ConsultAndSend(context.Background(), cfg)
 	if err != nil {
 		log.Fatal(err)
