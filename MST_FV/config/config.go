@@ -8,15 +8,13 @@ import (
 )
 
 // Config is a package that I use to get config configuration.
-
 type Config struct {
 	Bot        Bot
 	Chats      Chats
 	JsonRoutes JsonRoutes
 }
 type Bot struct {
-	ApiToken   string
-	ApiUrlMess string
+	ApiToken string
 }
 
 type Chats struct {
@@ -33,7 +31,6 @@ func GetConfig() (Config, error) {
 	botLoad := Bot{
 		ApiToken: os.Getenv("API_TOKEN"),
 	}
-	botLoad.setApiUrlMess()
 
 	chatLoad := Chats{}
 	chatLoad.ChatsId = strings.Split(os.Getenv("CHAT_IDS"), ",")
@@ -53,8 +50,4 @@ func loadEnv() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-}
-
-func (b *Bot) setApiUrlMess() {
-	b.ApiUrlMess = "https://api.telegram.org/bot" + b.ApiToken + "/sendMessage"
 }
