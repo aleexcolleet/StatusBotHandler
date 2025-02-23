@@ -21,7 +21,7 @@ type Services struct {
 
 // ConsultAndSend Domain interface to interact with the adapters
 type ConsultAndSend interface {
-	consultAndSend(ctx context.Context, cfg config.Config) error
+	ConsultAndSend(ctx context.Context, cfg config.Config) error
 }
 
 // NewServices is a constructor for the Services
