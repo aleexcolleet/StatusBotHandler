@@ -19,8 +19,8 @@ type Services struct {
 	messageRepo  repositories.Message
 }
 
-// ConsultAndSend Domain interface to interact with the adapters
-type ConsultAndSend interface {
+// ConsultAndSendUseCase Domain interface to interact with the adapters
+type ConsultAndSendUseCase interface {
 	ConsultAndSend(ctx context.Context, cfg config.Config) error
 }
 

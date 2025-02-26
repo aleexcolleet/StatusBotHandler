@@ -9,10 +9,10 @@ import (
 type Server struct {
 	app            *fiber.App //app instance
 	cfg            config.Config
-	consultAndSend usecases.ConsultAndSend //repo dependency injection
+	consultAndSend usecases.ConsultAndSendUseCase //repo dependency injection
 }
 
-func NewServer(cfg config.Config, consultAndSend usecases.ConsultAndSend) *Server {
+func NewServer(cfg config.Config, consultAndSend usecases.ConsultAndSendUseCase) *Server {
 	return &Server{
 		app:            fiber.New(),
 		cfg:            cfg,
@@ -26,7 +26,7 @@ func (s *Server) SetUpRoutes() {
 	s.app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
-	//ConsultAndSend call
+	//ConsultAndSendUseCase call
 	s.app.Post("/consultAndSend", s.HandleConsultAndSend)
 	//Healt endpoint
 	s.app.Get("/health", func(c *fiber.Ctx) error {

@@ -12,6 +12,7 @@ type Config struct {
 	Bot        Bot
 	Chats      Chats
 	JsonRoutes JsonRoutes
+	Database   Database
 }
 type Bot struct {
 	ApiToken string
@@ -25,6 +26,14 @@ type JsonRoutes struct {
 	JsonRouteUrlSource string
 }
 
+type Database struct {
+	Port     string
+	Host     string
+	User     string
+	Password string
+	DBName   string
+}
+
 func GetConfig() (Config, error) {
 
 	loadEnv()
@@ -35,6 +44,13 @@ func GetConfig() (Config, error) {
 	chatLoad := Chats{}
 	chatLoad.ChatsId = strings.Split(os.Getenv("CHAT_IDS"), ",")
 
+	dbLoad := Database{
+		Port:     os.Getenv("DB_PORT"),
+		Host:     os.Getenv("DB_HOST"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		DBName:   os.Getenv("DB_NAME"),
+	}
 	return Config{
 		Bot:   botLoad,
 		Chats: chatLoad,
@@ -42,6 +58,7 @@ func GetConfig() (Config, error) {
 			JsonRouteRepo:      os.Getenv("JSON_ROUTE_REPO"),
 			JsonRouteUrlSource: os.Getenv("JSON_ROUTE_URL_SOURCE"),
 		},
+		Database: dbLoad,
 	}, nil
 }
 
