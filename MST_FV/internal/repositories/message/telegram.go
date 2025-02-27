@@ -67,6 +67,10 @@ func (t *TelegramMsgs) SendMessages(ctx context.Context, messages []string) erro
 				"chat_id": chatId,
 				"text":    msg,
 			})
+			if err != nil {
+				return fmt.Errorf("error while marshalling message: %v\n", err)
+			}
+
 			resp, err := http.Post(botLoad.ApiUrlMess, "application/json", bytes.NewBuffer(reqMap))
 			if err != nil {
 				return fmt.Errorf("error sending message: %s", err)

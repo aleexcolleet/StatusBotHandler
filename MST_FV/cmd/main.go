@@ -33,7 +33,10 @@ func main() {
 	}
 
 	// Adapters
-	storeRepo := stores.NewJsonStoreRepo(cfg)
+	storeRepo, err := stores.NewPostgresStore(cfg)
+	if err != nil {
+		log.Fatalf("error creating storeRepo %v\n", err)
+	}
 	msgsRepo := message.NewTelegramMsgs(cfg)
 	checkerRepo := checker.NewHttpUrlChecker()
 
@@ -49,5 +52,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error starting server: %v\n", err)
 	}
-	log.Fatal("Server Started Successfully\n")
+
+	log.Printf("server started successfully\n")
 }

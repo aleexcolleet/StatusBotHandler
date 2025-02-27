@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -37,6 +38,14 @@ type Database struct {
 func GetConfig() (Config, error) {
 
 	loadEnv()
+	//variables required validator
+	requiredVars := []string{"API_TOKEN", "CHAT_IDS", "DB_PORT", "DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"}
+	for _, key := range requiredVars {
+		if os.Getenv(key) == "" {
+			return Config{}, errors.New("environment variable " + key + " not set")
+		}
+	}
+
 	botLoad := Bot{
 		ApiToken: os.Getenv("API_TOKEN"),
 	}
