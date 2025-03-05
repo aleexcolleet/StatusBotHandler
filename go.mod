@@ -1,4 +1,4 @@
-module MST_FV
+module github.com/aleexcolleet/StatusBotHandler
 
 go 1.23.5
 
